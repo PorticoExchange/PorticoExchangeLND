@@ -3,8 +3,10 @@ package main
 import (
 	"github.com/BoltzExchange/boltz-lnd"
 	"github.com/BoltzExchange/boltz-lnd/boltz"
+	"github.com/BoltzExchange/boltz-lnd/chain"
 	"github.com/BoltzExchange/boltz-lnd/logger"
 	"github.com/BoltzExchange/boltz-lnd/nursery"
+	"github.com/BoltzExchange/boltz-lnd/scrooge"
 	"github.com/BoltzExchange/boltz-lnd/utils"
 	bitcoinCfg "github.com/btcsuite/btcd/chaincfg"
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -47,8 +49,15 @@ func main() {
 		logger.Warning("Could not connect to to Boltz LND node: " + err.Error())
 	}
 
+	chainClient := chain.BoltzChainClient{
+		Boltz: cfg.Boltz,
+	}
+
+	feeScrooge := &scrooge.Scrooge{}
+	feeScrooge.Init(chainParams, cfg.Database, cfg.LND, chainClient)
+
 	swapNursery := &nursery.Nursery{}
-	err = swapNursery.Init(symbol, boltzPubKey, chainParams, cfg.LND, cfg.Boltz, cfg.Database)
+	err = swapNursery.Init(symbol, boltzPubKey, chainParams, cfg.LND, cfg.Boltz, cfg.Database, feeScrooge)
 
 	if err != nil {
 		logger.Fatal("Could not start Swap nursery: " + err.Error())

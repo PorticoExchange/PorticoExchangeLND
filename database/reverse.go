@@ -154,6 +154,10 @@ func (database *Database) QueryPendingReverseSwaps() ([]ReverseSwap, error) {
 	return database.queryReverseSwaps("SELECT * FROM reverseSwaps WHERE status NOT IN ('" + strings.Join(boltz.CompletedStatus, "','") + "')")
 }
 
+func (database *Database) QueryReverseSwapsByClaimTransaction(id string) ([]ReverseSwap, error) {
+	return database.queryReverseSwaps("SELECT * FROM reverseSwaps WHERE claimTransactionId = '" + id + "'")
+}
+
 func (database *Database) CreateReverseSwap(reverseSwap ReverseSwap) error {
 	insertStatement := "INSERT INTO reverseSwaps (id, status, acceptZeroConf, privateKey, preimage, redeemScript, invoice, claimAddress, expectedAmount, timeoutBlockheight, lockupTransactionId, claimTransactionId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	statement, err := database.db.Prepare(insertStatement)

@@ -107,7 +107,7 @@ func (nursery *Nursery) handleReverseSwapStatus(reverseSwap *database.ReverseSwa
 		fallthrough
 
 	case boltz.TransactionConfirmed:
-		if parsedStatus == boltz.TransactionMempool && !reverseSwap.AcceptZeroConf {
+		if parsedStatus == boltz.TransactionMempool && reverseSwap.AcceptZeroConf {
 			break
 		}
 
@@ -139,7 +139,7 @@ func (nursery *Nursery) handleReverseSwapStatus(reverseSwap *database.ReverseSwa
 			return
 		}
 
-		lockupVout, err := nursery.findLockupVout(lockupAddress, lockupTransaction.MsgTx().TxOut)
+		lockupVout, err := nursery.scrooge.FindLockupVout(lockupAddress, lockupTransaction.MsgTx().TxOut)
 
 		if err != nil {
 			logger.Error("Could not find lockup vout of Reverse Swap " + reverseSwap.Id)
@@ -153,61 +153,15 @@ func (nursery *Nursery) handleReverseSwapStatus(reverseSwap *database.ReverseSwa
 
 		logger.Info("Constructing claim transaction for Reverse Swap " + reverseSwap.Id + " with output: " + lockupTransaction.Hash().String() + ":" + strconv.Itoa(int(lockupVout)))
 
-		claimAddress, err := btcutil.DecodeAddress(reverseSwap.ClaimAddress, nursery.chainParams)
+		claimTransaction, err := nursery.scrooge.SendClaimTransaction(*reverseSwap)
 
 		if err != nil {
-			logger.Error("Could not decode claim address of Reverse Swap: " + err.Error())
-			return
-		}
-
-		feeSatPerVbyte, err := nursery.getFeeEstimation()
-
-		if err != nil {
-			logger.Error("Could not get LND fee estimation: " + err.Error())
-			return
-		}
-
-		logger.Info("Using fee of " + strconv.FormatInt(feeSatPerVbyte, 10) + " sat/vbyte for claim transaction")
-
-		claimTransaction, err := boltz.ConstructTransaction(
-			[]boltz.OutputDetails{
-				{
-					LockupTransaction: lockupTransaction,
-					Vout:              lockupVout,
-					OutputType:        boltz.SegWit,
-					RedeemScript:      reverseSwap.RedeemScript,
-					PrivateKey:        reverseSwap.PrivateKey,
-					Preimage:          reverseSwap.Preimage,
-				},
-			},
-			claimAddress,
-			feeSatPerVbyte,
-		)
-
-		if err != nil {
-			logger.Error("Could not construct claim transaction: " + err.Error())
-			return
-		}
-
-		claimTransactionId := claimTransaction.TxHash().String()
-		logger.Info("Constructed claim transaction: " + claimTransactionId)
-
-		err = nursery.broadcastTransaction(claimTransaction)
-
-		if err != nil {
-			logger.Error("Could not finalize claim transaction: " + err.Error())
-			return
-		}
-
-		err = nursery.database.SetReverseSwapClaimTransactionId(reverseSwap, claimTransactionId)
-
-		if err != nil {
-			logger.Error("Could not set claim transaction id in database: " + err.Error())
+			logger.Error("Could not send claim transaction for Reverse Swap " + reverseSwap.Id + ": " + err.Error())
 			return
 		}
 
 		if claimTransactionIdChan != nil {
-			claimTransactionIdChan <- claimTransactionId
+			claimTransactionIdChan <- claimTransaction.TxHash().String()
 		}
 	}
 

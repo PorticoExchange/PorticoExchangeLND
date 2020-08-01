@@ -71,6 +71,17 @@ type SwapStatusResponse struct {
 	Error string `json:"error"`
 }
 
+type GetTransactionRequest struct {
+	Currency string `json:"currency"`
+	TransactionId string `json:"transactionId"`
+}
+
+type GetTransactionResponse struct {
+	TransactionHex string `json:"transactionHex"`
+
+	Error string `json:"error"`
+}
+
 type GetSwapTransactionRequest struct {
 	Id string `json:"id"`
 }
@@ -221,6 +232,20 @@ func (boltz *Boltz) SwapStatus(id string) (*SwapStatusResponse, error) {
 
 func (boltz *Boltz) StreamSwapStatus(id string, events chan *SwapStatusResponse, stopListening chan bool) error {
 	return streamSwapStatus(boltz.URL+"/streamswapstatus?id="+id, events, stopListening)
+}
+
+func (boltz *Boltz) GetTransaction(transactionId string) (*GetTransactionResponse, error) {
+	var response GetTransactionResponse
+	err := boltz.sendPostRequest("/gettransaction", GetTransactionRequest{
+		Currency:      boltz.symbol,
+		TransactionId: transactionId,
+	}, &response)
+
+	if response.Error != "" {
+		return nil, errors.New(response.Error)
+	}
+
+	return &response, err
 }
 
 func (boltz *Boltz) GetSwapTransaction(id string) (*GetSwapTransactionResponse, error) {

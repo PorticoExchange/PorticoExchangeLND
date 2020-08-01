@@ -165,6 +165,10 @@ func (database *Database) QueryRefundableSwaps(currentBlockHeight uint32) ([]Swa
 	return database.querySwaps("SELECT * FROM swaps WHERE status NOT IN ('" + strings.Join(boltz.CompletedStatus, "','") + "') AND timeoutBlockHeight <= " + strconv.FormatUint(uint64(currentBlockHeight), 10))
 }
 
+func (database *Database) QuerySwapsByRefundTransaction(id string) ([]Swap, error) {
+	return database.querySwaps("SELECT * FROM swaps WHERE refundTransactionId = '" + id + "'")
+}
+
 func (database *Database) CreateSwap(swap Swap) error {
 	insertStatement := "INSERT INTO swaps (id, status, privateKey, preimage, redeemScript, invoice, address, expectedAmount, timeoutBlockheight, lockupTransactionId, refundTransactionId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	statement, err := database.db.Prepare(insertStatement)
