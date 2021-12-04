@@ -8,7 +8,7 @@ import (
 
 const (
 	minPaymentFee              = 21
-	maxPaymentFeeRatio float64 = 0.03
+	maxPaymentFeeRatio float64 = 0.00005
 )
 
 // getFeeLimit calculates the fee limit of a payment in sat
