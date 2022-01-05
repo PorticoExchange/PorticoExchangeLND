@@ -1,4 +1,4 @@
-# Portico Exchange LND
+# Portico Exchange LND ⚡️
 
 This repository contains a (https://github.com/PorticoExchange) client for [LND](https://github.com/lightningnetwork/lnd). It supports Normal Submarine Swaps (from onchain to Lightning coins) and Reverse ones (from Lightning to onchain coins).
 
