@@ -17,6 +17,8 @@ func GetBlockTime(symbol string) float64 {
 
 	case "LTC":
 		blockTime = LitecoinBlockTime
+	case "LBTC";
+		blockTime = LiquidBitcoinBlockTime
 	}
 
 	return blockTime
