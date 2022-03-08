@@ -6,8 +6,8 @@ import (
 
 // Block times in minutes
 const BitcoinBlockTime = float64(10)
-const LitecoinBlockTime = float64(2.5)
-
+const LitecoinBlockTime = float64(2.5) 
+const LiquidBitcoinBlockTime = float64(1)
 func GetBlockTime(symbol string) float64 {
 	var blockTime float64
 
