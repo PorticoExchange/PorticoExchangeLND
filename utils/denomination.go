@@ -7,5 +7,9 @@ func GetSmallestUnitName(symbol string) string {
 
 	default:
 		return "satoshi"
+	case "LBTC"
+		return "liquitoshi"
+	default:
+		return "satoshi"
 	}
 }
